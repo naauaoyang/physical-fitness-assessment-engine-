@@ -1,4 +1,4 @@
-class Sport:
+class TrainingSport:
 
     def __init__(self, number, name, equipment, minimum_age,
                  is_independent, training_muscle_group,
