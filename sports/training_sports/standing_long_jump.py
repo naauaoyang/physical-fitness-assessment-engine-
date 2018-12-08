@@ -1,4 +1,4 @@
-from Sport import Sport
+from sports.Sport import Sport
 
 
 class StandingLongJump(Sport):
