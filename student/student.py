@@ -1,53 +1,52 @@
+from collections import Counter
+from sports.test_sports.vital_capacity import VitalCapacity
+
+
 class Student:
-    def __init__(self, name, gender, grade, height, weight,
-                 vital_capacity=None,
-                 fifty_m_run=None,
-                 sit_and_reach=None,
-                 one_minute_rope_skipping=None,
-                 sit_up=None,
-                 fifty_m_run_eight_shuffle=None):
+    def __init__(self, name, gender, grade, height, weight, **kwargs):
         """
 
         :param name:
         :param gender:
         :param grade:
-        :param height: in meter
-        :param weight: in kilogram
-        :param vital_capacity: in milliliter
-        :param fifty_m_run: in seconds
-        :param sit_and_reach: in centimeter
-        :param one_minute_rope_skipping: counts
-        :param sit_up: counts
-        :param fifty_m_run_eight_shuffle:
+        :param height:
+        :param weight:
+        :param kwargs: test sport name and its test result, e.g. vital_capacity=1000
         """
         self.name = name
         self.gender = gender
         self.grade = grade
         self.height = height
         self.weight = weight
-        self.vital_capacity = vital_capacity
-        self.fifty_m_run = fifty_m_run
-        self.sit_and_reach = sit_and_reach
-        self.one_minute_rope_skipping = one_minute_rope_skipping
-        self.sit_up = sit_up
-        self.fifty_m_run_eight_shuffle = fifty_m_run_eight_shuffle
+        self.test_sports = kwargs
 
-    def get_speed(self):
-        pass
+    # retrieve five dimension indexes from all available test sports of this student,
+    # then compute average as the final five dimension indexes
+    def get_five_dimension_index(self):
+        five_dimension_indexes = []
+        for name, result in self.test_sports.items():
+            try:
+                constructor = globals()[Student.underscore_to_camelcase(name)]
+                test_sport = constructor()
+                score = test_sport.get_score(self.gender, self.grade, result)
+                score = 70
+                assessment = test_sport.get_assessment(score)
+                five_dimension_index = test_sport.get_five_dimension_index(assessment)
+                five_dimension_indexes.append(five_dimension_index)
+            except KeyError:
+                print "{} is invalid test sport name!".format(name)
 
-    def get_strength(self):
-        pass
-
-    def get_endurance(self):
-        pass
-
-    def get_coordination(self):
-        pass
-
-    def get_flexibility(self):
-        pass
+        if five_dimension_indexes:
+            sums = Counter()
+            counters = Counter()
+            for five_dimension_index in five_dimension_indexes:
+                sums.update(five_dimension_index)
+                counters.update(five_dimension_index.keys())
+            return {x: float(sums[x]) / counters[x] for x in sums.keys()}
 
     def get_bmi(self):
-        pass
+        return self.weight / (self.height**2)
 
-
+    @staticmethod
+    def underscore_to_camelcase(word):
+        return ''.join(x.capitalize() for x in word.split('_'))
