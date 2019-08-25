@@ -1,52 +1,68 @@
-from collections import Counter
-from sports.test_sports.vital_capacity import VitalCapacity
+from utils.enums.test_sports import TestSports
+from utils.enums.gender import Gender
+from utils.enums.grade import Grade
+from utils.constants import Constants
 
 
 class Student:
-    def __init__(self, name, gender, grade, height, weight, **kwargs):
+    def __init__(self, _id, gender, grade, fy_score):
         """
 
-        :param name:
+        :param _id: unique identifier
         :param gender:
         :param grade:
-        :param height:
-        :param weight:
-        :param kwargs: test sport name and its test result, e.g. vital_capacity=1000
+        :param fy_score: current for_young score, an instance of class for_young_score.Score
         """
-        self.name = name
+        self._id = _id
         self.gender = gender
         self.grade = grade
-        self.height = height
-        self.weight = weight
-        self.test_sports = kwargs
+        self.fy_score = fy_score
 
-    # retrieve five dimension indexes from all available test sports of this student,
-    # then compute average as the final five dimension indexes
-    def get_five_dimension_index(self):
-        five_dimension_indexes = []
-        for name, result in self.test_sports.items():
-            try:
-                constructor = globals()[Student.underscore_to_camelcase(name)]
-                test_sport = constructor()
-                score = test_sport.get_score(self.gender, self.grade, result)
-                score = 70
-                assessment = test_sport.get_assessment(score)
-                five_dimension_index = test_sport.get_five_dimension_index(assessment)
-                five_dimension_indexes.append(five_dimension_index)
-            except KeyError:
-                print "{} is invalid test sport name!".format(name)
-
-        if five_dimension_indexes:
-            sums = Counter()
-            counters = Counter()
-            for five_dimension_index in five_dimension_indexes:
-                sums.update(five_dimension_index)
-                counters.update(five_dimension_index.keys())
-            return {x: float(sums[x]) / counters[x] for x in sums.keys()}
-
-    def get_bmi(self):
-        return self.weight / (self.height**2)
+    def update_fy_score(self, test_name, test_result):
+        pass
 
     @staticmethod
-    def underscore_to_camelcase(word):
-        return ''.join(x.capitalize() for x in word.split('_'))
+    def get_score_from_test(gender, grade, test_name, test_result):
+        """
+        get score ranging from [0, 100] from gender, grate, test_name
+        and test_result.
+
+        :param gender:
+        :param grade:
+        :param test_name:
+        :param test_result:
+        :return:
+        """
+        score_map = TestSports[test_name.upper()] \
+            .value \
+            [Constants.SCORE_MAP] \
+            [Gender[gender.upper()]] \
+            [Grade[grade.upper()]]
+        print(score_map)
+
+        score = Student.get_score(score_map, test_result)
+        print(score)
+
+    @staticmethod
+    def get_score(score_map, test_result):
+        """
+        TODO add implementation for tests that the larger the result the better.
+        :param score_map:
+        :param test_result:
+        :return:
+        """
+        if test_result < score_map[20]:
+            return int((test_result / score_map[20]) * 20)
+        elif test_result < score_map[40]:
+            return int(20 + (test_result - score_map[20]) / (score_map[40] - score_map[20]) * 20)
+        elif test_result < score_map[60]:
+            return int(40 + (test_result - score_map[40]) / (score_map[60] - score_map[40]) * 20)
+        elif test_result < score_map[85]:
+            return int(60 + (test_result - score_map[60]) / (score_map[85] - score_map[60]) * 20)
+        elif test_result < score_map[100]:
+            return int(85 + (test_result - score_map[85]) / (score_map[100] - score_map[85]) * 20)
+        else:
+            return 100
+
+
+Student.get_score_from_test('male', 'one', 'standing_long_jump', 1.1)
